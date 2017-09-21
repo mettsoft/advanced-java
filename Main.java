@@ -1,12 +1,12 @@
-import java.util.Scanner;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.File;
-
-import Utility.InputHandler;
+import Utility.PromptBuilder;
 import Model.DataTable;
 import Model.Tuple;
-import Model.Operation;
-import Model.Option;
+import Enumeration.Option;
 
 // New Features:
 // 1. [Data] Each cell must contain a key-value pair.
@@ -24,6 +24,10 @@ import Model.Option;
 // 10. [Search] Must display as follows => (row, col) key: N, value: M 
 // 11. [Add/Edit/Import] No character limit.
 
+// Revision Finished:
+// 1. Concatenate key&value then search.
+// 2. Use map.
+
 public class Main {
 
 	private static final int DEFAULT_ROW_SIZE = 3;
@@ -35,8 +39,6 @@ public class Main {
 
 	private static final String SEARCH_PROMPT = "Please enter the search keyword: ";	
 	private static final String OPTION_PROMPT = "Please select an option:\n1. Key\n2. Value\n3. Both\nOption: ";	
-	private static final String SEARCH_PROMPT_BY_KEY = "Please enter the search keyword for key: ";
-	private static final String SEARCH_PROMPT_BY_VALUE = "Please enter the search keyword for value: ";
 
 	private static final String EDIT_PROMPT_ROW_INDEX = "Please enter the row index: ";
 	private static final String EDIT_PROMPT_COLUMN_INDEX = "Please enter the column index: ";
@@ -51,13 +53,9 @@ public class Main {
 
 	public static void main(String[] args) {
 
+		PromptBuilder promptBuilder = new PromptBuilder(System.in, System.out);
 		DataTable dataTable = null;
-		File inputFile = null;
-		if (args.length == 1) {
-			inputFile = new File(args[0]);
-		}
-		
-		Scanner scanner = new Scanner(System.in);
+		File inputFile = args.length == 1? new File(args[0]): null;
 		System.out.println(MAIN_HEADER);
 
 		while (true) {
@@ -68,91 +66,104 @@ public class Main {
 				}
 
 				System.out.println(dataTable);
-				System.out.print(MAIN_PROMPT);
-	
-				int operationIndex = InputHandler.getIntegerInput(scanner) - 1;
-				Operation selectedOperation = Operation.getOperationFor(operationIndex);
+
 				Option selectedOption = null;
-				int optionIndex = 0;
+				int selectedOperation = promptBuilder.prompt(MAIN_PROMPT)
+					.getNextLine(input -> Integer.valueOf(input) - 1);
 
 				switch (selectedOperation) {
-					case SEARCH: 
-						System.out.print(OPTION_PROMPT);
-						optionIndex = InputHandler.getIntegerInput(scanner) - 1; 
-						selectedOption = Option.getOptionFor(optionIndex);
 
-						StringBuilder builder = new StringBuilder();
+					// Search
+					case 0: 						
 
-						if (selectedOption == Option.BOTH || selectedOption == Option.KEY) {
-							System.out.print(SEARCH_PROMPT_BY_KEY);
-							String searchByKey = scanner.nextLine();
-							Map<Tuple<Integer, Integer>, Integer> resultMapByKey = dataTable.search(searchByKey, tuple -> tuple.getFirst());
-							builder.append(("By Key:\n" + resultMapByKey + "\n"));		
-						}
+						String searchKeyword = promptBuilder
+							.prompt(SEARCH_PROMPT)
+							.getNextLine();
 
-						if (selectedOption == Option.BOTH || selectedOption == Option.VALUE) {
-							System.out.print(SEARCH_PROMPT_BY_VALUE);
-							String searchByValue = scanner.nextLine();
-							Map<Tuple<Integer, Integer>, Integer> resultMapByValue = dataTable.search(searchByValue, tuple -> tuple.getSecond());
-							builder.append(("By Value:\n" + resultMapByValue));		
-						}
+						Map resultMap = dataTable.search(searchKeyword);
 
-						System.out.println(builder);
+						if (resultMap.isEmpty())
+							System.out.println("No search found!\n");
+						else 
+							System.out.println(String.format("Search Result:\n%s\n", resultMap));		
+
 						break;
 
-					case EDIT: 
-						System.out.print(OPTION_PROMPT);
-						optionIndex = InputHandler.getIntegerInput(scanner) - 1; 
-						selectedOption = Option.getOptionFor(optionIndex);
+					// Edit
+					case 1: 
 
-						System.out.print(EDIT_PROMPT_ROW_INDEX);
-						int row = InputHandler.getIntegerInput(scanner);
+						selectedOption = promptBuilder
+							.prompt(OPTION_PROMPT)
+							.getNextLine(input -> Option.getOptionFor(Integer.valueOf(input) - 1));
 
-						System.out.print(EDIT_PROMPT_COLUMN_INDEX);
-						int column = InputHandler.getIntegerInput(scanner);
+						int row = promptBuilder
+							.prompt(EDIT_PROMPT_ROW_INDEX)
+							.getNextLine(input -> Integer.valueOf(input));
 
+						int column = promptBuilder
+							.prompt(EDIT_PROMPT_COLUMN_INDEX)
+							.getNextLine(input -> Integer.valueOf(input));
 
 						if (selectedOption == Option.BOTH || selectedOption == Option.KEY) {
-							System.out.print(EDIT_PROMPT_BY_KEY);
-							String replaceByKey = scanner.nextLine();
+
+							String replaceByKey = promptBuilder
+								.prompt(EDIT_PROMPT_BY_KEY)
+								.getNextLine();
+
 							dataTable.replaceByKey(row, column, replaceByKey);				
 						}
 
 						if (selectedOption == Option.BOTH || selectedOption == Option.VALUE) {
-							System.out.print(EDIT_PROMPT_BY_VALUE);
-							String replaceByValue = scanner.nextLine();
+
+							String replaceByValue = promptBuilder
+								.prompt(EDIT_PROMPT_BY_VALUE)
+								.getNextLine();
+
 							dataTable.replaceByValue(row, column, replaceByValue);				
 						}
 
 						break;
 
-					case RESET:
-						System.out.print(RESET_PROMPT_NUMBER_OF_ROWS);
-						int numberOfRows = InputHandler.getIntegerInput(scanner);
+					// Reset
+					case 2:
 
-						System.out.print(RESET_PROMPT_NUMBER_OF_COLUMNS);
-						int numberOfColumns = InputHandler.getIntegerInput(scanner);
+						int numberOfRows = promptBuilder
+							.prompt(RESET_PROMPT_NUMBER_OF_ROWS)
+							.getNextLine(input -> Integer.valueOf(input));
+
+						int numberOfColumns = promptBuilder
+							.prompt(RESET_PROMPT_NUMBER_OF_COLUMNS)
+							.getNextLine(input -> Integer.valueOf(input));
 
 					 	dataTable = new DataTable(numberOfRows, numberOfColumns, DEFAULT_CELL_SIZE);
+
 						break;
 
-					case ADD: 						
-						System.out.print(ADD_PROMPT_NUMBER_OF_ROWS);
-						int rowsToBeAdded = InputHandler.getIntegerInput(scanner);
+					// Add
+					case 3: 					
+
+						int rowsToBeAdded = promptBuilder
+							.prompt(ADD_PROMPT_NUMBER_OF_ROWS)
+							.getNextLine(input -> Integer.valueOf(input));
 
 						for (int i = 0; i < rowsToBeAdded; i++) {
-							System.out.print(ADD_PROMPT_ROW_VALUES);
-							String rowValues = scanner.nextLine();
+
+							String rowValues = promptBuilder
+								.prompt(ADD_PROMPT_ROW_VALUES)
+								.getNextLine();
+
 							dataTable.add(rowValues);
 						}
 
 						break;
 
-					case SORT: 
+					// Sort
+					case 4: 
 					 	dataTable.sort();
 						break;
 
-					case EXIT: 
+					// Exit
+					case 5: 
 						System.exit(0);
 				}
 			}

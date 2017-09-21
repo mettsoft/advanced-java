@@ -1,4 +1,4 @@
-package Exceptions;
+package Exception;
 
 // done.
 public class InvalidRowSizeException extends Exception {

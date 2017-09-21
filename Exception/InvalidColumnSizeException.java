@@ -1,4 +1,4 @@
-package Exceptions;
+package Exception;
 
 // Done.
 public class InvalidColumnSizeException extends Exception {

@@ -1,4 +1,4 @@
-package Model;
+package Enumeration;
 
 public enum Option {
 	KEY,

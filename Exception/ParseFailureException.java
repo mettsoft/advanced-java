@@ -1,4 +1,4 @@
-package Exceptions;
+package Exception;
 
 // DONE!
 public class ParseFailureException extends Exception {
