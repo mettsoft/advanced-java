@@ -1,4 +1,4 @@
-package Model;
+package com.ecc.model;
 
 public class Tuple <T, U> {
 
@@ -12,15 +12,13 @@ public class Tuple <T, U> {
 
 	@Override
 	public int hashCode() {
-		// 2, 1 = (2 + 1) * 1 + 2 = 4
-		// 1, 2 = (1 + 2) * 2 + 1 = 5
 		return (first.hashCode() + second.hashCode()) * second.hashCode() + first.hashCode();
 	}	
 
 	@Override
 	public boolean equals(Object otherTuple) {
-		
-		return otherTuple instanceof Tuple && this.first == ((Tuple) otherTuple).getFirst() && 
+		return otherTuple != null && otherTuple instanceof Tuple && 
+			this.first == ((Tuple) otherTuple).getFirst() && 
 			this.second == ((Tuple) otherTuple).getSecond();
 	}
 

@@ -1,2 +1,2 @@
-#!/bin/sh
-java -cp ./build Main $1
+#!/bin/bash
+java -cp ./build com.ecc.Main $1

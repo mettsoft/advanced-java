@@ -1,4 +1,4 @@
-package Model;
+package com.ecc.model;
 
 public class Key {
 	private Integer index;
@@ -26,8 +26,8 @@ public class Key {
 	}
 
 	@Override
-	public boolean equals(Object otherKey) {	
-		return otherKey instanceof Key && 
+	public boolean equals(Object otherKey) {
+		return otherKey != null && otherKey instanceof Key && 
 			this.index == ((Key) otherKey).index;
 	}
 

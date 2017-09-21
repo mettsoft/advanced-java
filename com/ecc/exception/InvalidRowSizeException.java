@@ -1,9 +1,7 @@
-package Exception;
+package com.ecc.exception;
 
-// done.
 public class InvalidRowSizeException extends Exception {
-
-	public InvalidRowSizeException(int expectedSize) {
+	public InvalidRowSizeException(Integer expectedSize) {
 		super(String.format("Row size must be %d.", expectedSize));
 	}
 
